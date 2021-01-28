@@ -48,12 +48,16 @@ for (file in paths) {
 #Use map with paths to read in the data to a single tibble called ds_map
 #If you did this correctly, it should look the same as ds_combined created above
 
+ds_map <- map(paths, ~ read_csv(.x))
+ds_map <- bind_rows(ds_map)
 
 ### Question 4 ----------
 
 #The data are in a wider-than-ideal format. 
 #Use pivot_longer to reshape the data so that sex is a column with values male/female and words is a column
 #Use ds_combined or one of the ones you created in Question 2 or 3, and save the output to ds_longer
+
+ds_longer <- pivot_longer(ds_map, cols = c("Female","Male"), names_to = "Sex", values_to = "Words")
 
 ### Question 5 ----------
 
@@ -63,6 +67,8 @@ for (file in paths) {
 total_words <- tibble(Film =  c("The Fellowship Of The Ring", "The Two Towers","The Return Of The King"),
                       Total = c(177277, 143436, 134462))
 
+ds_longer <- left_join(ds_longer, total_words, by = "Film")
+ds_longer$percent <- (ds_longer$Words)/(ds_longer$Total)
 ### Question 6 ----------
 #The function below creates a graph to compare the words spoken by race/sex for a single film
 #The input for the function is a tibble that contains only a single film
@@ -75,6 +81,11 @@ words_graph <- function(df) {
   print(p)
 }
 
+film <- c("The Fellowship Of The Ring","The Two Towers","The Return Of The King")
+
+for (name in film) {
+  words_graph(ds_longer %>% filter(Film==name))
+}
 ### Question 7 ----------
 
 #Apply the words_graph function again, but this time
